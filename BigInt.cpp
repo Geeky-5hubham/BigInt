@@ -1,7 +1,4 @@
-// C++ program to implement
-// the above approach
 #include <bits/stdc++.h>
-
 using namespace std;
 
 class BigInt
@@ -11,15 +8,15 @@ class BigInt
 public:
     // Constructors:
     BigInt(unsigned long long n = 0);
-    BigInt(string &);
-    BigInt(const char *);
-    BigInt(BigInt &);
+    BigInt(const string &s);     // Constructor for std::string
+    BigInt(const char *s);       // Constructor for C-style string
+    BigInt(const BigInt &other); // Copy constructor
 
     // Helper Functions:
     friend void divide_by_2(BigInt &a);
     friend bool Null(const BigInt &);
     friend int Length(const BigInt &);
-    int operator[](const int) const;
+    char &operator[](const int); 
 
     /* * * * Operator Overloading * * * */
 
@@ -27,10 +24,10 @@ public:
     BigInt &operator=(const BigInt &);
 
     // Addition and Subtraction
-    friend BigInt &operator+=(BigInt &, const BigInt &);
+    friend BigInt &operator+=(BigInt &, const BigInt &); // for chaining
     friend BigInt operator+(const BigInt &, const BigInt &);
     friend BigInt operator-(const BigInt &, const BigInt &);
-    friend BigInt &operator-=(BigInt &, const BigInt &);
+    friend BigInt &operator-=(BigInt &, const BigInt &); // for chaining
 
     // Comparison operators
     friend bool operator==(const BigInt &, const BigInt &);
@@ -59,16 +56,15 @@ public:
     friend BigInt sqrt(BigInt &a);
 
     // Read and Write
-    friend ostream &operator<<(ostream &, const BigInt &);
-    friend istream &operator>>(istream &, BigInt &);
+    friend ostream &operator<<(ostream &, const BigInt &); // for chaining
+    friend istream &operator>>(istream &, BigInt &);       // we are modifying the input object
 
     // Others
-    friend BigInt NthCatalan(int n);
-    friend BigInt NthFibonacci(int n);
-    friend BigInt Factorial(int n);
+    BigInt NthFibonacci(int n);
+    BigInt Factorial(int n);
 };
 
-BigInt::BigInt(string &s)
+BigInt::BigInt(const string &s)
 {
     digits = "";
     int n = s.size();
@@ -79,6 +75,7 @@ BigInt::BigInt(string &s)
         digits.push_back(s[i] - '0');
     }
 }
+
 BigInt::BigInt(unsigned long long nr)
 {
     do
@@ -97,7 +94,8 @@ BigInt::BigInt(const char *s)
         digits.push_back(s[i] - '0');
     }
 }
-BigInt::BigInt(BigInt &a)
+
+BigInt::BigInt(const BigInt &a)
 {
     digits = a.digits;
 }
@@ -112,7 +110,7 @@ int Length(const BigInt &a)
 {
     return a.digits.size();
 }
-int BigInt::operator[](const int index) const
+char &BigInt::operator[](const int index)
 {
     if (digits.size() <= index || index < 0)
         throw("ERROR");
@@ -202,7 +200,7 @@ BigInt &operator-=(BigInt &a, const BigInt &b)
             t = 0;
         a.digits[i] = s;
     }
-    while (n > 1 && a.digits[n - 1] == 0)
+    while (n > 1 && a.digits[n - 1] == 0) // removing leading zeroes
         a.digits.pop_back(),
             n--;
     return a;
@@ -215,7 +213,7 @@ BigInt operator-(const BigInt &a, const BigInt &b)
     return temp;
 }
 
-BigInt &operator*=(BigInt &a, const BigInt &b)
+BigInt &operator*=(BigInt &a, const BigInt &b) // O(n*m)
 {
     if (Null(a) || Null(b))
     {
@@ -238,7 +236,7 @@ BigInt &operator*=(BigInt &a, const BigInt &b)
         t = s / 10;
         a.digits[i] = v[i];
     }
-    for (int i = n - 1; i >= 1 && !v[i]; i--)
+    for (int i = n - 1; i >= 1 && !v[i]; i--) // removing leading zeroes
         a.digits.pop_back();
     return a;
 }
@@ -250,7 +248,7 @@ BigInt operator*(const BigInt &a, const BigInt &b)
     return temp;
 }
 
-BigInt &operator/=(BigInt &a, const BigInt &b)
+BigInt &operator/=(BigInt &a, const BigInt &b) // O(n*m)
 {
     if (Null(b))
         throw("Arithmetic Error: Division By 0");
@@ -266,8 +264,8 @@ BigInt &operator/=(BigInt &a, const BigInt &b)
     }
     int i, lgcat = 0, cc;
     int n = Length(a), m = Length(b);
-    vector<int> cat(n, 0);
-    BigInt t;
+    vector<int> cat(n, 0); // to store quotients
+    BigInt t;              // remainder
     for (i = n - 1; t * 10 + a.digits[i] < b; i--)
     {
         t *= 10;
@@ -336,7 +334,7 @@ BigInt operator%(const BigInt &a, const BigInt &b)
     return temp;
 }
 
-BigInt &operator^=(BigInt &a, const BigInt &b)
+BigInt &operator^=(BigInt &a, const BigInt &b) // O(log(b) * m^2)     m -> no.of digits in a
 {
     BigInt Exponent, Base(a);
     Exponent = b;
@@ -357,7 +355,7 @@ BigInt operator^(BigInt &a, BigInt &b)
     return temp;
 }
 
-void divide_by_2(BigInt &a)
+void divide_by_2(BigInt &a) // O(m)
 {
     int add = 0;
     for (int i = a.digits.size() - 1; i >= 0; i--)
@@ -370,7 +368,7 @@ void divide_by_2(BigInt &a)
         a.digits.pop_back();
 }
 
-BigInt sqrt(BigInt &a)
+BigInt sqrt(BigInt &a) // o(m^2 log a)
 {
     BigInt left(1), right(a), v(1), mid, prod;
     divide_by_2(right);
@@ -396,21 +394,7 @@ BigInt sqrt(BigInt &a)
     return v;
 }
 
-BigInt NthCatalan(int n)
-{
-    BigInt a(1), b;
-    for (int i = 2; i <= n; i++)
-        a *= i;
-    b = a;
-    for (int i = n + 1; i <= 2 * n; i++)
-        b *= i;
-    a *= a;
-    a *= (n + 1);
-    b /= a;
-    return b;
-}
-
-BigInt NthFibonacci(int n)
+BigInt NthFibonacci(int n) // o(n*m)        m->no.of digits in largest number
 {
     BigInt a(1), b(1), c;
     if (!n)
@@ -425,7 +409,7 @@ BigInt NthFibonacci(int n)
     return b;
 }
 
-BigInt Factorial(int n)
+BigInt Factorial(int n) // O(n^2logn)
 {
     BigInt f(1);
     for (int i = 2; i <= n; i++)
